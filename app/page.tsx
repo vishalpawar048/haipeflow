@@ -47,7 +47,7 @@ const UrlToVideoMockup = () => (
         <div className="h-2.5 w-2.5 rounded-full bg-green-400/20" />
       </div>
       <div className="mx-auto flex h-6 w-1/2 items-center rounded-md bg-white border border-black/5 px-2 text-[10px] text-gray-400 shadow-sm">
-        https://your-app-url.com
+        https://apps.apple.com/app/id...
       </div>
     </div>
     <div className="grid grid-cols-[1fr_280px] h-[400px]">
@@ -195,21 +195,21 @@ export default function Home() {
           <div className="mx-auto max-w-6xl">
             <div className="max-w-3xl space-y-8">
               <h1 className="text-5xl font-medium tracking-tight sm:text-7xl text-black">
-                Turn your URL into <br />
+                Turn your App link into <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">
                   viral social ads.
                 </span>
               </h1>
               <p className="max-w-xl text-lg text-gray-600 leading-relaxed">
-                Paste your app or website link. Haipe Flow&apos;s AI analyzes
-                your content and generates high-converting video ads for
-                Instagram, TikTok, and LinkedIn in seconds.
+                Paste your App Store or Play Store link. Haipe Flow&apos;s AI
+                analyzes your app&apos;s content and generates high-converting
+                video ads for Instagram, TikTok, and LinkedIn in seconds.
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <div className="flex w-full max-w-md items-center gap-2 rounded-full border border-black/10 bg-white p-1 pl-5 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
                   <input
                     type="text"
-                    placeholder="Paste your website URL..."
+                    placeholder="Search for your app..."
                     className="w-full bg-transparent outline-none text-sm"
                   />
                   <Link
@@ -315,9 +315,9 @@ export default function Home() {
                   Multi-Platform Formatting
                 </h3>
                 <p className="mt-2 text-gray-500 max-w-md">
-                  One URL generates assets optimized for every platform. 9:16
-                  for Reels/TikTok, 1:1 for Instagram Feed, and 16:9 for YouTube
-                  Ads.
+                  One app link generates assets optimized for every platform.
+                  9:16 for Reels/TikTok, 1:1 for Instagram Feed, and 16:9 for
+                  YouTube Ads.
                 </p>
               </div>
 
@@ -398,8 +398,8 @@ export default function Home() {
                   {[
                     {
                       id: "analyze",
-                      title: "1. Paste URL",
-                      desc: "We crawl your site to understand your product, features, and audience.",
+                      title: "1. Search App",
+                      desc: "We fetch your app details, screenshots, and reviews directly from the store.",
                     },
                     {
                       id: "generate",
@@ -437,7 +437,7 @@ export default function Home() {
                   {activeTab === "analyze" && (
                     <div className="w-full max-w-xs bg-white rounded-xl shadow-xl border border-black/5 overflow-hidden animate-in zoom-in duration-500">
                       <div className="bg-gray-50 border-b border-black/5 p-3 text-xs text-gray-400">
-                        Scanning site...
+                        Analyzing app...
                       </div>
                       <div className="p-4 space-y-3">
                         <div className="h-2 w-full bg-blue-100 rounded-full animate-pulse"></div>
