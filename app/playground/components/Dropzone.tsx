@@ -57,8 +57,8 @@ export const Dropzone: React.FC<DropzoneProps> = ({
       />
       
       {preview ? (
-        <div className="relative w-full h-32 overflow-hidden rounded-lg">
-           <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+        <div className="relative w-full h-32 flex items-center justify-center rounded-lg bg-slate-50 overflow-hidden">
+           <img src={preview} alt="Preview" className="w-full h-full object-contain p-2" />
            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
              <Icon name="RefreshCw" className="text-white w-6 h-6" />
            </div>
