@@ -1,12 +1,29 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LeftPanel } from '@/app/playground/components/LeftPanel';
 import { RightPanel } from '@/app/playground/components/RightPanel';
 import { AppDetails, AppCategory, Tone, GeneratedConcept, GenerationState, VideoResult, AspectRatio, VideoDuration, GenerationProgress } from '@/app/playground/types';
 import { DEFAULT_THEME_COLOR } from '@/app/playground/constants';
+import { authClient } from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
 
 export default function Playground() {
+  const router = useRouter();
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: session } = await authClient.getSession();
+      if (!session) {
+        router.push('/sign-in');
+      } else {
+        setIsAuthChecking(false);
+      }
+    };
+    checkAuth();
+  }, [router]);
+
   const [details, setDetails] = useState<AppDetails>({
     name: '',
     category: AppCategory.UTILITY,
@@ -130,6 +147,17 @@ export default function Playground() {
     }
   };
 
+  if (isAuthChecking) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+          <p className="text-sm text-slate-500">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-slate-50 text-slate-900">
       <LeftPanel 
@@ -137,7 +165,11 @@ export default function Playground() {
         setDetails={setDetails}
         onGenerateConcepts={handleGenerateConcepts}
         generationState={generationState}
-        onBack={() => window.location.href = '/'}
+        onBack={() => {
+            authClient.signOut().then(() => {
+                router.push('/');
+            });
+        }}
       />
       <RightPanel 
         generationState={generationState}

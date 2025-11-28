@@ -104,6 +104,9 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   // Helper to convert URL to Base64 via Backend Proxy
   const urlToBase64 = async (url: string): Promise<string> => {
     try {
+      // Skip fetching if URL is empty
+      if (!url) return "";
+      
       const res = await fetch(`/api/proxy-image?url=${encodeURIComponent(url)}`);
       if (!res.ok) throw new Error("Proxy failed");
       const data = await res.json();
