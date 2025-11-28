@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AppCine Creative Toolkit",
+  title: "Haipe Flow Creative Toolkit",
   description: "The next generation of creative tools for modern teams.",
 };
 

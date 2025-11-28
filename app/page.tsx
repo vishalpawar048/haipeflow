@@ -1,27 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 // --- Icons & Visual Helpers ---
 
-const ArrowRight = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    className="inline-block transition-transform group-hover:translate-x-1"
-  >
-    <path
-      d="M6.66669 4L10.6667 8L6.66669 12"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+// const ArrowRight = () => (
+//   <svg
+//     width="16"
+//     height="16"
+//     viewBox="0 0 16 16"
+//     fill="none"
+//     className="inline-block transition-transform group-hover:translate-x-1"
+//   >
+//     <path
+//       d="M6.66669 4L10.6667 8L6.66669 12"
+//       stroke="currentColor"
+//       strokeWidth="1.5"
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
+//     />
+//   </svg>
+// );
 
 const PlayIcon = () => (
   <svg
@@ -70,8 +71,8 @@ const UrlToVideoMockup = () => (
             </div>
           </div>
           <div className="p-3 bg-white rounded-lg border border-black/5 text-[10px] leading-relaxed text-gray-500 shadow-sm">
-            "Experience the future of productivity. Our app streamlines your
-            workflow..."
+            &quot;Experience the future of productivity. Our app streamlines
+            your workflow...&quot;
           </div>
         </div>
       </div>
@@ -148,8 +149,14 @@ export default function Home() {
       <nav className="fixed top-0 z-50 w-full border-b border-black/5 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2 font-semibold text-xl tracking-tight">
-            <div className="h-6 w-6 rounded bg-black" />
-            AppCine
+            <Image
+              src="/logo.png"
+              alt="Haipe Flow Logo"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+            Haipe Flow
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#" className="hover:text-black transition-colors">
@@ -194,9 +201,9 @@ export default function Home() {
                 </span>
               </h1>
               <p className="max-w-xl text-lg text-gray-600 leading-relaxed">
-                Paste your app or website link. AppCine's AI analyzes your
-                content and generates high-converting video ads for Instagram,
-                TikTok, and LinkedIn in seconds.
+                Paste your app or website link. Haipe Flow&apos;s AI analyzes
+                your content and generates high-converting video ads for
+                Instagram, TikTok, and LinkedIn in seconds.
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <div className="flex w-full max-w-md items-center gap-2 rounded-full border border-black/10 bg-white p-1 pl-5 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
@@ -333,8 +340,8 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-semibold">Performance First</h3>
                 <p className="mt-2 text-gray-500">
-                  Our AI is trained on high-converting ad creatives. We don't
-                  just make videos; we make ads that sell.
+                  Our AI is trained on high-converting ad creatives. We
+                  don&apos;t just make videos; we make ads that sell.
                 </p>
               </div>
 
@@ -345,7 +352,7 @@ export default function Home() {
                     <div className="h-2 w-full bg-gray-100 rounded"></div>
                     <div className="h-2 w-2/3 bg-gray-100 rounded"></div>
                     <div className="mt-3 h-8 w-full bg-orange-100 rounded text-xs flex items-center justify-center text-orange-600 font-medium">
-                      "Best productivity tool 2025"
+                      &quot;Best productivity tool 2025&quot;
                     </div>
                   </div>
                 </div>
@@ -474,7 +481,7 @@ export default function Home() {
               Stop editing. Start growing.
             </h2>
             <p className="mx-auto max-w-xl text-lg text-gray-400 mb-10">
-              Create a month's worth of video ads in minutes. Scale your
+              Create a month&apos;s worth of video ads in minutes. Scale your
               campaigns without scaling your team.
             </p>
             <button className="rounded-full bg-white px-8 py-4 text-base font-bold text-black transition hover:bg-gray-200">
@@ -490,8 +497,14 @@ export default function Home() {
         <footer className="border-t border-black/5 bg-gray-50 py-12 px-6">
           <div className="mx-auto max-w-6xl flex flex-col md:flex-row justify-between gap-8">
             <div className="space-y-4">
-              <div className="h-6 w-6 rounded bg-black" />
-              <p className="text-sm text-gray-500">© 2025 AppCine.</p>
+              <Image
+                src="/logo.png"
+                alt="Haipe Flow Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+              <p className="text-sm text-gray-500">© 2025 Haipe Flow.</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-12">
               {["Product", "Company", "Resources", "Legal"].map((col) => (

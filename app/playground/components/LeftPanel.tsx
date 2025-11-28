@@ -257,9 +257,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
         </div>
         
         <div className="flex items-center gap-3 mb-2">
-           <div className="p-2 bg-blue-600 rounded-lg shadow-sm">
-             <Icon name="Zap" className="w-6 h-6 text-white" />
-           </div>
+           <img src="/logo.png" alt="Haipe Flow Logo" className="w-10 h-10 object-contain" />
            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Haipe Flow</h1>
         </div>
         <p className="text-slate-500">Generate high-conversion mobile video ads in seconds.</p>

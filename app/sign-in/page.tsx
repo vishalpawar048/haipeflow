@@ -31,8 +31,11 @@ export default function SignIn() {
         <div className="flex min-h-screen flex-col items-center justify-center bg-white p-4">
             <div className="w-full max-w-md space-y-8 rounded-2xl border border-gray-100 bg-white p-8 shadow-xl">
                 <div className="text-center">
-                    <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
-                        Welcome to AppCine
+                    <div className="flex justify-center mb-4">
+                        <img src="/logo.png" alt="Haipe Flow Logo" className="h-12 w-auto object-contain" />
+                    </div>
+                    <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
+                        Welcome to Haipe Flow
                     </h2>
                     <p className="mt-2 text-sm text-gray-600">
                         Sign in to create viral social ads
