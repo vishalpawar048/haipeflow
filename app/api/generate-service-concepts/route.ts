@@ -11,11 +11,7 @@ const AI_MODELS = {
   TEXT_GEN: "gemini-2.0-flash",
 };
 
-// Helper to remove data:image/xyz;base64, prefix
-const cleanBase64 = (data: string) => data.split(",")[1] || data;
-
 const getBestAspectRatio = (details: any): string => {
-  // Simple mapping for the demo, can be expanded
   if (details.aspectRatio === "9:16") return "9:16";
   if (details.aspectRatio === "16:9") return "16:9";
   if (details.aspectRatio === "1:1") return "1:1";
@@ -32,7 +28,7 @@ const getBestAspectRatio = (details: any): string => {
 };
 
 export async function POST(request: Request) {
-  console.log("request");
+  console.log("Service concept request");
   try {
     const details = await request.json();
 
@@ -49,41 +45,27 @@ export async function POST(request: Request) {
 
     // 1. Generate Scripts & Concept Descriptions
     const scriptPrompt = `
-      You are a mobile marketing expert. Create 4 distinct visual concepts for a ${
-        details.category
-      } app named "${details.name}".
+      You are a service business marketing expert. Create 4 distinct visual concepts for a service business named "${details.brandName}" (${details.serviceType}).
       Key Selling Point: "${details.sellingPoint}".
       Tone: ${details.tone}.
 
-      The video will be ${
-        isLong ? "30 seconds (4 scenes)" : "15 seconds (2 scenes)"
-      } long.
-      Maintain consistent characters, voice, and narrative arc throughout all scenes.
+      The video will be ${isLong ? "30 seconds (4 scenes)" : "15 seconds (2 scenes)"} long.
+      Focus on the result, trust, and human connection.
 
       For each concept, provide:
-      1. A short description of the visual style.
+      1. A short description of the visual style (e.g. "Professional office", "Happy client result").
       2. A visual script describing the ON-SCREEN ACTION for ${totalScenes} scenes.
          
       CRITICAL INSTRUCTION FOR TEXT:
-      When describing the UI or screen content in the script, specify EXACT meaningful text that should appear on the screen.
-      - DO NOT say "Screen shows text". 
-      - DO say "Screen header reads 'My Portfolio', button says 'Invest Now'".
-      - Incorporate keywords from the Selling Point ("${
-        details.sellingPoint
-      }") into the headlines, button labels, and data points.
-      - Ensure all text mentioned is real English, correctly spelled, and strictly relevant to a ${
-        details.category
-      } app.
+      - Specify EXACT text for headlines and overlays.
+      - Headlines should focus on the PROBLEM solved or the RESULT gained.
+      - Incorporate keywords from "${details.sellingPoint}".
       
       Structure:
-         - Scene 1: Intro/Hook. Define the exact headline text on screen (using Selling Point words).
-         - Scene 2: Feature/Interaction. Define the button labels or data points.
-         ${
-           isLong
-             ? "- Scene 3: Benefit/Expansion. Define the benefit text.\n       - Scene 4: Resolution/CTA."
-             : "- Scene 2 should lead to the CTA if it is the last scene."
-         }
-         - The Final Scene (Scene ${totalScenes}): Must end with the logo and a clear text CTA like "Download Now" or "Start [Benefit]".
+         - Scene 1: Hook/Problem. Address the viewer's pain point or desire. Headline text.
+         - Scene 2: Solution/Process. Show the service in action (e.g. consulting, working) or the immediate result.
+         ${isLong ? "- Scene 3: Trust/Testimonial. Show a happy client or credential.\n       - Scene 4: Offer/CTA." : "- Scene 2 should lead to the CTA if it is the last scene."}
+         - The Final Scene: Must end with the logo and a clear CTA like "Book Now", "Call Us", or "Learn More".
       
       Return JSON.
     `;
@@ -123,13 +105,10 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log("scriptResponse", scriptResponse);
-
     const extractText = (response: any) => {
       if (response.text && typeof response.text === "function") {
         return response.text();
       }
-      // Fallback for @google/genai if text() helper isn't present
       if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
         return response.candidates[0].content.parts[0].text;
       }
@@ -140,54 +119,32 @@ export async function POST(request: Request) {
     const finalConcepts: any[] = [];
 
     // 2. Generate Visual Hooks (Start/End frames) for each concept
-    // Use Promise.all to run in parallel
     await Promise.all(
       conceptsData.map(async (concept: any, index: number) => {
         try {
-          const parts: any[] = [];
-          if (details.logo) {
-            parts.push({
-              inlineData: {
-                mimeType: "image/png",
-                data: cleanBase64(details.logo),
-              },
-            });
-          }
-          if (details.screenshots.length > 0) {
-            parts.push({
-              inlineData: {
-                mimeType: "image/png",
-                data: cleanBase64(details.screenshots[0]),
-              },
-            });
-          }
-
           // Generate Start Frame
           const startPrompt = `
-          Generate a photorealistic Start Frame for a mobile app video ad.
-          App: ${details.name} (${details.category}).
+          Generate a professional Start Frame for a service business video ad.
+          Business: ${details.brandName} (${details.serviceType}).
           Style: ${details.tone}, ${concept.description}.
           Action: ${concept.script.scene1}.
           Color Theme: ${details.themeColor}.
           
-          CRITICAL TEXT INSTRUCTIONS:
-          - Show the app interface on a modern smartphone screen clearly.
-          - The UI text MUST reflect the Key Selling Point: "${details.sellingPoint}".
-          - Example: If selling point is "Track Fast", show "Fast Tracker" or "Speed: High".
-          - ANY visible text on the screen MUST be meaningful, legible English words.
-          - DO NOT use "Lorem Ipsum" or gibberish. 
-          - Use specific labels like "Dashboard", "Total Balance", "Settings", or "Start" based on the app category.
-          - High quality, professional product photography.
+          CRITICAL INSTRUCTIONS:
+          - Depict a professional setting or a happy client outcome.
+          - Avoid generic stock photo look if possible; aim for authentic business photography.
+          - Include text overlay matching the hook: "${details.sellingPoint}".
+          - High resolution, trustworthy atmosphere.
         `;
 
-          // Only use text prompt for Imagen, as it doesn't support multimodal input in this mode
+          // Only use text prompt for Imagen
           const startParts = [{ text: startPrompt }];
 
           const startResp = await genai.models.generateContent({
             model: AI_MODELS.IMAGE_GEN,
             contents: { parts: startParts },
             config: {
-              // @ts-ignore: imageConfig typing
+              // @ts-ignore
               imageConfig: {
                 aspectRatio: selectedAspectRatio,
               },
@@ -206,26 +163,23 @@ export async function POST(request: Request) {
             console.warn("No candidates in start frame response", startResp);
           }
 
-          // Generate End Frame (Call To Action) based on the LAST scene
+          // Generate End Frame (Call To Action)
           const lastSceneScript = isLong
             ? concept.script.scene4
             : concept.script.scene2;
           const endPrompt = `
-          Generate a photorealistic End Frame for a mobile app video ad.
-          App: ${details.name}.
-          Style: ${details.tone}, consistent with previous frame.
+          Generate a professional End Frame for a service business video ad.
+          Business: ${details.brandName}.
+          Style: ${details.tone}.
           Action: ${lastSceneScript}.
           Color Theme: ${details.themeColor}.
           
-          CRITICAL TEXT INSTRUCTIONS:
-          - A clear, legible Call to Action.
-          - Use words related to "${details.sellingPoint}" (e.g. "Start [Benefit]" or "Get [Benefit]").
-          - The App Name "${details.name}" must be spelled correctly if shown.
-          - NO random characters or gibberish.
-          - Minimal text, high contrast, professional.
+          CRITICAL INSTRUCTIONS:
+          - Clear Call to Action (e.g. "Book Consultation").
+          - Professional typography.
+          - Clean layout.
         `;
 
-          // Only use text prompt for Imagen
           const endParts = [{ text: endPrompt }];
 
           const endResp = await genai.models.generateContent({
@@ -279,3 +233,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

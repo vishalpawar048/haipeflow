@@ -68,7 +68,7 @@ export default function ServicePlayground() {
     try {
       // We might need to adapt the payload for the API or update the API to handle ServiceDetails
       // For now, sending details as is.
-      const response = await fetch("/api/generate-concepts", {
+      const response = await fetch("/api/generate-service-concepts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +122,7 @@ export default function ServicePlayground() {
     }, 10000);
 
     try {
-      const response = await fetch("/api/generate-video-veo", {
+      const response = await fetch("/api/generate-service-video-veo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

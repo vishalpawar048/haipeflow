@@ -67,7 +67,7 @@ export default function ProductPlayground() {
     setConcepts([]);
 
     try {
-      const response = await fetch("/api/generate-concepts", {
+      const response = await fetch("/api/generate-product-concepts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -121,7 +121,7 @@ export default function ProductPlayground() {
     }, 10000);
 
     try {
-      const response = await fetch("/api/generate-video-veo", {
+      const response = await fetch("/api/generate-product-video-veo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
