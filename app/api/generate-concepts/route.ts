@@ -7,8 +7,8 @@ const genai = new GoogleGenAI({
 });
 
 const AI_MODELS = {
-  IMAGE_GEN: 'gemini-2.5-flash-image',
-  TEXT_GEN: 'gemini-2.5-flash',
+  IMAGE_GEN: 'imagen-3.0-generate-001',
+  TEXT_GEN: 'gemini-2.0-flash',
 };
 
 // Helper to remove data:image/xyz;base64, prefix
@@ -152,7 +152,8 @@ export async function POST(request: Request) {
           - High quality, professional product photography.
         `;
         
-        const startParts = [...parts, { text: startPrompt }];
+        // Only use text prompt for Imagen, as it doesn't support multimodal input in this mode
+        const startParts = [{ text: startPrompt }];
 
         const startResp = await genai.models.generateContent({
           model: AI_MODELS.IMAGE_GEN,
@@ -173,6 +174,8 @@ export async function POST(request: Request) {
                     startFrame = `data:image/png;base64,${part.inlineData.data}`;
                 }
              }
+        } else {
+            console.warn("No candidates in start frame response", startResp);
         }
 
         // Generate End Frame (Call To Action) based on the LAST scene
@@ -192,7 +195,8 @@ export async function POST(request: Request) {
           - Minimal text, high contrast, professional.
         `;
 
-        const endParts = [...parts, { text: endPrompt }];
+        // Only use text prompt for Imagen
+        const endParts = [{ text: endPrompt }];
 
         const endResp = await genai.models.generateContent({
           model: AI_MODELS.IMAGE_GEN,

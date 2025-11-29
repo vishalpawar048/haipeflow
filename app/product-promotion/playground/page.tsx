@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { LeftPanel } from "./components/LeftPanel";
-import { RightPanel } from "./components/RightPanel";
+import React, { useState, useEffect } from "react";
+import { ProductLeftPanel } from "@/app/playground/components/ProductLeftPanel";
+import { RightPanel } from "@/app/playground/components/RightPanel";
 import {
-  AppDetails,
-  AppCategory,
+  ProductDetails,
   Tone,
   GeneratedConcept,
   GenerationState,
@@ -13,22 +12,44 @@ import {
   AspectRatio,
   VideoDuration,
   GenerationProgress,
-} from "./types";
-import { DEFAULT_THEME_COLOR } from "./constants";
+} from "@/app/playground/types";
+import { DEFAULT_THEME_COLOR } from "@/app/playground/constants";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { SignInModal } from "@/app/components/SignInModal";
 
-export default function Playground() {
-  const [details, setDetails] = useState<AppDetails>({
-    name: "",
-    category: AppCategory.UTILITY,
+export default function ProductPlayground() {
+  const router = useRouter();
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [showSignIn, setShowSignIn] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: session } = await authClient.getSession();
+      if (!session) {
+        setShowSignIn(true);
+        setIsAuthChecking(false);
+      } else {
+        setUserId(session.user.id);
+        setIsAuthChecking(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const [details, setDetails] = useState<ProductDetails>({
+    productName: "",
+    productType: "",
     themeColor: DEFAULT_THEME_COLOR,
     sellingPoint: "",
     tone: Tone.PROFESSIONAL,
     logo: null,
-    screenshots: [],
+    productPhotos: [],
     aspectRatio: AspectRatio.PORTRAIT,
     customWidth: 1080,
     customHeight: 1920,
-    duration: VideoDuration.SHORT, // Default 15s
+    duration: VideoDuration.SHORT,
   });
 
   const [generationState, setGenerationState] = useState<GenerationState>(
@@ -77,7 +98,6 @@ export default function Playground() {
     if (!selectedConceptId) return;
 
     setGenerationState(GenerationState.GENERATING_VIDEO);
-    // Initial progress
     setProgress({
       currentStep: 0,
       totalSteps: details.duration === VideoDuration.LONG ? 4 : 2,
@@ -87,9 +107,6 @@ export default function Playground() {
     const concept = concepts.find((c) => c.id === selectedConceptId);
     if (!concept) return;
 
-    // We can simulate progress steps for UI feedback while the request is pending
-    // since the real API call is a single long-running request in this version.
-    // (In a more advanced version, use Server-Sent Events for real-time progress)
     let step = 0;
     const totalSteps = details.duration === VideoDuration.LONG ? 4 : 2;
     const progressInterval = setInterval(() => {
@@ -101,7 +118,7 @@ export default function Playground() {
           message: `Generating Scene ${step}...`,
         });
       }
-    }, 10000); // update every 10s as a guess
+    }, 10000);
 
     try {
       const response = await fetch("/api/generate-video-veo", {
@@ -122,7 +139,6 @@ export default function Playground() {
       const result = await response.json();
 
       if (result && result.videoUrl) {
-        // Construct a display script
         let scriptText = `${concept.script.scene1} || ${concept.script.scene2}`;
         if (concept.script.scene3 && concept.script.scene4) {
           scriptText += ` || ${concept.script.scene3} || ${concept.script.scene4}`;
@@ -147,14 +163,34 @@ export default function Playground() {
     }
   };
 
+  if (isAuthChecking) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+          <p className="text-sm text-slate-500">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-slate-50 text-slate-900">
-      <LeftPanel
+      <SignInModal 
+        isOpen={showSignIn} 
+        onClose={() => router.push('/')}
+      />
+      <ProductLeftPanel
         details={details}
         setDetails={setDetails}
         onGenerateConcepts={handleGenerateConcepts}
         generationState={generationState}
-        onBack={() => (window.location.href = "/")}
+        onBack={() => {
+          authClient.signOut().then(() => {
+            router.push("/");
+          });
+        }}
+        userId={userId}
       />
       <RightPanel
         generationState={generationState}

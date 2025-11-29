@@ -7,22 +7,27 @@ import { AppDetails, AppCategory, Tone, GeneratedConcept, GenerationState, Video
 import { DEFAULT_THEME_COLOR } from '@/app/playground/constants';
 import { authClient } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
+import { SignInModal } from '@/app/components/SignInModal';
 
 export default function Playground() {
   const router = useRouter();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [showSignIn, setShowSignIn] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: session } = await authClient.getSession();
       if (!session) {
-        router.push('/sign-in');
+        setShowSignIn(true);
+        setIsAuthChecking(false);
       } else {
+        setUserId(session.user.id);
         setIsAuthChecking(false);
       }
     };
     checkAuth();
-  }, [router]);
+  }, []);
 
   const [details, setDetails] = useState<AppDetails>({
     name: '',
@@ -160,6 +165,10 @@ export default function Playground() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-slate-50 text-slate-900">
+      <SignInModal 
+        isOpen={showSignIn} 
+        onClose={() => router.push('/')}
+      />
       <LeftPanel 
         details={details}
         setDetails={setDetails}
@@ -170,6 +179,7 @@ export default function Playground() {
                 router.push('/');
             });
         }}
+        userId={userId}
       />
       <RightPanel 
         generationState={generationState}
@@ -183,3 +193,4 @@ export default function Playground() {
     </div>
   );
 }
+

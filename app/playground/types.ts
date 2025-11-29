@@ -54,6 +54,33 @@ export interface AppDetails {
   duration: VideoDuration;
 }
 
+export interface ServiceDetails {
+  brandName: string;
+  serviceType: string;
+  themeColor: string;
+  sellingPoint: string;
+  tone: Tone;
+  logo: string | null; // base64
+  aspectRatio: AspectRatio;
+  customWidth?: number;
+  customHeight?: number;
+  duration: VideoDuration;
+}
+
+export interface ProductDetails {
+  productName: string;
+  productType: string;
+  themeColor: string;
+  sellingPoint: string; // used for description
+  tone: Tone;
+  logo: string | null; // base64
+  productPhotos: string[]; // array of base64
+  aspectRatio: AspectRatio;
+  customWidth?: number;
+  customHeight?: number;
+  duration: VideoDuration;
+}
+
 export interface GeneratedConcept {
   id: string;
   startFrame: string; // base64

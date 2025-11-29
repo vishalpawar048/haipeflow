@@ -17,14 +17,6 @@ export const metadata: Metadata = {
   description: "The next generation of creative tools for modern teams.",
 };
 
-import { Purchases } from "@revenuecat/purchases-js";
-
-const appUserId = Purchases.generateRevenueCatAnonymousAppUserId();
-const purchases = Purchases.configure({
-  apiKey: "test_pYEVmvQOErZDyCQBRxDvZoybWbB",
-  appUserId: appUserId,
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{

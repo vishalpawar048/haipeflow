@@ -12,13 +12,13 @@ export default function SignIn() {
         setIsLoading(true);
         await authClient.signIn.social({
             provider: "google",
-            callbackURL: "/playground",
+            callbackURL: "/",
         }, {
             onRequest: () => {
                 setIsLoading(true);
             },
             onSuccess: () => {
-                router.push("/playground");
+                router.push("/");
             },
             onError: (ctx) => {
                 setIsLoading(false);
