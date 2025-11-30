@@ -445,22 +445,38 @@ export async function POST(request: Request) {
         jsonLdScripts.forEach((script) => {
           try {
             const json = JSON.parse(script.textContent || "{}");
-            // Look for Product image
-            if (json["@type"] === "Product" && json.image) {
-              if (Array.isArray(json.image)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                json.image.forEach((img: any) =>
-                  addImage(typeof img === "string" ? img : img.url)
-                );
-              } else if (typeof json.image === "string") {
-                addImage(json.image);
-              } else if (json.image.url) {
-                addImage(json.image.url);
+            // Helper to check for image in object
+            const checkImage = (obj: any) => {
+              // Check for Product, Service, LocalBusiness, etc.
+              const types = [
+                "Product",
+                "Service",
+                "LocalBusiness",
+                "ProfessionalService",
+                "Organization",
+              ];
+              if (types.includes(obj["@type"]) && obj.image) {
+                if (Array.isArray(obj.image)) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  obj.image.forEach((img: any) =>
+                    addImage(typeof img === "string" ? img : img.url)
+                  );
+                } else if (typeof obj.image === "string") {
+                  addImage(obj.image);
+                } else if (obj.image.url) {
+                  addImage(obj.image.url);
+                }
               }
-            }
-            // Look for ImageObject
-            if (json["@type"] === "ImageObject" && json.url) {
-              addImage(json.url);
+              // Check for ImageObject
+              if (obj["@type"] === "ImageObject" && obj.url) {
+                addImage(obj.url);
+              }
+            };
+
+            if (Array.isArray(json)) {
+              json.forEach(checkImage);
+            } else {
+              checkImage(json);
             }
           } catch (e) {
             console.warn("Failed to parse JSON-LD", e);
@@ -480,15 +496,17 @@ export async function POST(request: Request) {
           const height = img.naturalHeight || img.height || 0;
 
           // More permissive filter: check keywords if dimensions are missing/small
-          const isProductImage = (src || "")
+          const isRelevantImage = (src || "")
             .toLowerCase()
-            .match(/product|assets|img|photo|gallery/);
+            .match(
+              /product|assets|img|photo|gallery|service|portfolio|work|upload/
+            );
 
           // Only add if we haven't found enough high-quality images from picture/JSON-LD
-          // Or if it's clearly a product image
+          // Or if it's clearly a relevant image
           if (
             (width > 150 && height > 150) ||
-            (isProductImage && width === 0)
+            (isRelevantImage && width === 0)
           ) {
             addImage(src);
           }
@@ -635,11 +653,11 @@ export async function POST(request: Request) {
         );
 
         const visionPrompt = `
-            Look at this screenshot of a product page.
+            Look at this screenshot of a product or service page.
             Extract the following information in JSON format:
-            - title: The specific name of the product shown.
+            - title: The specific name of the product or service shown.
             - description: A compelling marketing description based on the visual details (max 2 sentences).
-            - type: The specific category of the product (e.g. "Handbag", "Software", "Coffee").
+            - type: The specific category of the product or service (e.g. "Handbag", "Software", "Consulting", "Coffee").
          `;
 
         // Reuse the screenshotCaptured earlier
