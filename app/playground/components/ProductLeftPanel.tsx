@@ -48,16 +48,11 @@ export const ProductLeftPanel: React.FC<ProductLeftPanelProps> = ({
       const data = await response.json();
       setDetails((prev) => ({
         ...prev,
-        productName: data.title || prev.productName,
-        sellingPoint: data.description || prev.sellingPoint,
-        productType: data.type || prev.productType,
-        productPhotos: data.images
-          ? [
-              ...prev.productPhotos,
-              ...data.images.slice(0, 5 - prev.productPhotos.length),
-            ]
-          : prev.productPhotos,
-        logo: data.logo || prev.logo,
+        productName: data.title || "",
+        sellingPoint: data.description || "",
+        productType: data.type || "",
+        productPhotos: data.images ? data.images.slice(0, 5) : [],
+        logo: data.logo || null,
       }));
     } catch (error) {
       console.error("Scraping error:", error);

@@ -48,16 +48,11 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
       const data = await response.json();
       setDetails((prev) => ({
         ...prev,
-        brandName: data.title || prev.brandName,
-        sellingPoint: data.description || prev.sellingPoint,
-        serviceType: data.type || prev.serviceType,
-        servicePhotos: data.images
-          ? [
-              ...prev.servicePhotos,
-              ...data.images.slice(0, 5 - prev.servicePhotos.length),
-            ]
-          : prev.servicePhotos,
-        logo: data.logo || prev.logo,
+        brandName: data.title || "",
+        sellingPoint: data.description || "",
+        serviceType: data.type || "",
+        servicePhotos: data.images ? data.images.slice(0, 5) : [],
+        logo: data.logo || null,
       }));
     } catch (error) {
       console.error("Scraping error:", error);
