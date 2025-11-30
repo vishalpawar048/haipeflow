@@ -7,7 +7,7 @@ const genai = new GoogleGenAI({
 });
 
 const AI_MODELS = {
-  IMAGE_GEN: "gemini-2.5-flash-image",
+  IMAGE_GEN: "gemini-3-pro-image-preview",
   TEXT_GEN: "gemini-2.0-flash",
 };
 
@@ -45,11 +45,15 @@ export async function POST(request: Request) {
 
     // 1. Generate Scripts & Concept Descriptions
     const scriptPrompt = `
-      You are a service business marketing expert. Create 4 distinct visual concepts for a service business named "${details.brandName}" (${details.serviceType}).
+      You are a service business marketing expert. Create 4 distinct visual concepts for a service business named "${
+        details.brandName
+      }" (${details.serviceType}).
       Key Selling Point: "${details.sellingPoint}".
       Tone: ${details.tone}.
 
-      The video will be ${isLong ? "30 seconds (4 scenes)" : "15 seconds (2 scenes)"} long.
+      The video will be ${
+        isLong ? "30 seconds (4 scenes)" : "15 seconds (2 scenes)"
+      } long.
       Focus on the result, trust, and human connection.
 
       For each concept, provide:
@@ -64,7 +68,11 @@ export async function POST(request: Request) {
       Structure:
          - Scene 1: Hook/Problem. Address the viewer's pain point or desire. Headline text.
          - Scene 2: Solution/Process. Show the service in action (e.g. consulting, working) or the immediate result.
-         ${isLong ? "- Scene 3: Trust/Testimonial. Show a happy client or credential.\n       - Scene 4: Offer/CTA." : "- Scene 2 should lead to the CTA if it is the last scene."}
+         ${
+           isLong
+             ? "- Scene 3: Trust/Testimonial. Show a happy client or credential.\n       - Scene 4: Offer/CTA."
+             : "- Scene 2 should lead to the CTA if it is the last scene."
+         }
          - The Final Scene: Must end with the logo and a clear CTA like "Book Now", "Call Us", or "Learn More".
       
       Return JSON.
@@ -233,4 +241,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

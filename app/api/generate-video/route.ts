@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     }
 
     // Get the video URI
-    const videoUri = operation.response.generatedVideos[0].video.uri;
+    const videoUri = operation.response?.generatedVideos?.[0]?.video?.uri || "";
     console.log("Video generated at URI:", videoUri);
 
     // Fetch the video content to return as Data URI (Proxy)
