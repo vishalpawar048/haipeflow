@@ -1113,7 +1113,7 @@ export default function Home() {
             </div>
 
             {/* Social Proof */}
-            <div className="mt-20 border-y border-black/5 py-10">
+            {/* <div className="mt-20 border-y border-black/5 py-10">
               <p className="text-center text-sm font-medium text-gray-400 mb-8">
                 POWERING ADS FOR HIGH-GROWTH COMPANIES
               </p>
@@ -1131,7 +1131,7 @@ export default function Home() {
                   </span>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </section>
 
