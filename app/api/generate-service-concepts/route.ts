@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI, Type } from "@google/genai";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { deductCredits, hasSufficientCredits } from "@/lib/credits";
 
 // Use environment variable for API key
 const genai = new GoogleGenAI({
@@ -30,6 +33,22 @@ const getBestAspectRatio = (details: any): string => {
 export async function POST(request: Request) {
   console.log("Service concept request");
   try {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const FIXED_CONCEPT_PRICE = 50;
+    if (!(await hasSufficientCredits(session.user.id, FIXED_CONCEPT_PRICE))) {
+        return NextResponse.json(
+            { error: "Insufficient credits. Please buy more." },
+            { status: 402 }
+        );
+    }
+
     const details = await request.json();
 
     if (!process.env.GEMINI_API_KEY) {
@@ -231,6 +250,12 @@ export async function POST(request: Request) {
     );
 
     console.log("finalConcepts", finalConcepts);
+
+    try {
+        await deductCredits(session.user.id, FIXED_CONCEPT_PRICE);
+    } catch (e) {
+        console.error("Failed to deduct credits", e);
+    }
 
     return NextResponse.json(finalConcepts);
   } catch (error: any) {

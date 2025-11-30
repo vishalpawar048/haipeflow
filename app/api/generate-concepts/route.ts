@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI, Type } from "@google/genai";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import {
+  calculateTextCost,
+  calculateImageCost,
+  deductCredits,
+  hasSufficientCredits,
+} from "@/lib/credits";
 
 // Use environment variable for API key
 const genai = new GoogleGenAI({
@@ -34,7 +42,25 @@ const getBestAspectRatio = (details: any): string => {
 export async function POST(request: Request) {
   console.log("request");
   try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check for minimum credits (e.g., enough for one run approx 5-10 credits)
+    const FIXED_CONCEPT_PRICE = 50;
+    if (!(await hasSufficientCredits(session.user.id, FIXED_CONCEPT_PRICE))) {
+      return NextResponse.json(
+        { error: "Insufficient credits. Please buy more." },
+        { status: 402 }
+      );
+    }
+
     const details = await request.json();
+    let totalCost = 0;
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
@@ -124,6 +150,12 @@ export async function POST(request: Request) {
     });
 
     console.log("scriptResponse", scriptResponse);
+
+    if (scriptResponse.usageMetadata) {
+      const input = scriptResponse.usageMetadata.promptTokenCount || 0;
+      const output = scriptResponse.usageMetadata.candidatesTokenCount || 0;
+      totalCost += calculateTextCost(input, output);
+    }
 
     const extractText = (response: any) => {
       if (response.text && typeof response.text === "function") {
@@ -269,6 +301,14 @@ export async function POST(request: Request) {
     );
 
     console.log("finalConcepts", finalConcepts);
+
+    // Deduct credits
+    try {
+      await deductCredits(session.user.id, FIXED_CONCEPT_PRICE);
+    } catch (error) {
+      console.error("Error deducting credits:", error);
+      // We don't fail the request if deduction fails, but we log it.
+    }
 
     return NextResponse.json(finalConcepts);
   } catch (error: any) {

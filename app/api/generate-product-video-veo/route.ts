@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { deductCredits, hasSufficientCredits } from "@/lib/credits";
 
 const genai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || "",
@@ -39,7 +42,28 @@ const getVeoAspectRatio = (details: any): string => {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { concept, details } = await request.json();
+
+    // Pricing: $0.40/sec.
+    // Short (16s) = $6.40 cost. 30% Margin -> Price = ~$9.14 -> Round to 950 credits ($9.50)
+    // Long (32s) = $12.80 cost. 30% Margin -> Price = ~$18.28 -> Round to 1900 credits ($19.00)
+    const isLong = details.duration === '30s';
+    const VIDEO_PRICE = isLong ? 1900 : 950;
+
+    if (!(await hasSufficientCredits(session.user.id, VIDEO_PRICE))) {
+        return NextResponse.json(
+            { error: `Insufficient credits. Video generation requires ${VIDEO_PRICE} credits.` },
+            { status: 402 }
+        );
+    }
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
@@ -49,7 +73,6 @@ export async function POST(request: Request) {
     }
 
     const selectedRatio = getVeoAspectRatio(details);
-    const isLong = details.duration === "30s";
 
     // Determine scenes
     const scenes = [];
@@ -163,6 +186,13 @@ export async function POST(request: Request) {
     const arrayBuffer = await response.arrayBuffer();
     const base64Video = Buffer.from(arrayBuffer).toString("base64");
     const dataUri = `data:video/mp4;base64,${base64Video}`;
+
+    // Deduct credits for video generation
+    try {
+        await deductCredits(session.user.id, VIDEO_PRICE);
+    } catch (error) {
+        console.error("Error deducting credits:", error);
+    }
 
     return NextResponse.json({
       videoUrl: dataUri,

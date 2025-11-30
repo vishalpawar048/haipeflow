@@ -15,6 +15,9 @@ interface LeftPanelProps {
   onGenerateConcepts: () => void;
   generationState: GenerationState;
   onBack?: () => void;
+  userId?: string | null;
+  credits?: number;
+  onBuyCredits?: () => void;
 }
 
 interface SearchResult {
@@ -34,6 +37,8 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   onGenerateConcepts,
   generationState,
   onBack,
+  credits,
+  onBuyCredits,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -312,6 +317,21 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
               Back to Home
             </button>
           )}
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="px-3 py-1 bg-slate-100 rounded-full text-xs font-medium text-slate-600 border border-slate-200 whitespace-nowrap">
+              {credits !== undefined
+                ? `${Math.round(credits)} Credits`
+                : "Loading..."}
+            </div>
+            {onBuyCredits && (
+              <button
+                onClick={onBuyCredits}
+                className="text-xs text-blue-600 font-bold hover:text-blue-700 transition-colors bg-blue-50 px-3 py-1 rounded-full whitespace-nowrap"
+              >
+                + Buy
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3 mb-2">

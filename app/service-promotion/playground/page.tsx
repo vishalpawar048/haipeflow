@@ -17,12 +17,29 @@ import { DEFAULT_THEME_COLOR } from "@/app/playground/constants";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { SignInModal } from "@/app/components/SignInModal";
+import { InsufficientCreditsModal } from "@/app/components/InsufficientCreditsModal";
+import { BuyCreditsModal } from "@/app/components/BuyCreditsModal";
 
 export default function ServicePlayground() {
   const router = useRouter();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [credits, setCredits] = useState<number | undefined>(undefined);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showInsufficientCredits, setShowInsufficientCredits] = useState(false);
+  const [showBuyCredits, setShowBuyCredits] = useState(false);
+
+  const fetchCredits = async () => {
+    try {
+      const res = await fetch("/api/user/credits");
+      if (res.ok) {
+        const data = await res.json();
+        setCredits(data.credits);
+      }
+    } catch (e) {
+      console.error("Failed to fetch credits", e);
+    }
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -33,6 +50,7 @@ export default function ServicePlayground() {
       } else {
         setUserId(session.user.id);
         setIsAuthChecking(false);
+        fetchCredits();
       }
     };
     checkAuth();
@@ -77,6 +95,11 @@ export default function ServicePlayground() {
       });
 
       if (!response.ok) {
+        if (response.status === 402) {
+          setShowInsufficientCredits(true);
+          setGenerationState(GenerationState.IDLE);
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -85,6 +108,7 @@ export default function ServicePlayground() {
       if (generated && generated.length > 0) {
         setConcepts(generated);
         setGenerationState(GenerationState.AWAITING_SELECTION);
+        fetchCredits();
       } else {
         throw new Error("No concepts generated.");
       }
@@ -133,6 +157,12 @@ export default function ServicePlayground() {
       clearInterval(progressInterval);
 
       if (!response.ok) {
+        if (response.status === 402) {
+          setShowInsufficientCredits(true);
+          setGenerationState(GenerationState.AWAITING_SELECTION);
+          setProgress(null);
+          return;
+        }
         const err = await response.json();
         throw new Error(err.error || "Video generation failed");
       }
@@ -152,6 +182,7 @@ export default function ServicePlayground() {
         });
         setGenerationState(GenerationState.COMPLETE);
         setProgress(null);
+        fetchCredits();
       } else {
         throw new Error("Video generation returned invalid result");
       }
@@ -177,9 +208,15 @@ export default function ServicePlayground() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-slate-50 text-slate-900">
-      <SignInModal 
-        isOpen={showSignIn} 
-        onClose={() => router.push('/')}
+      <SignInModal isOpen={showSignIn} onClose={() => router.push("/")} />
+      <InsufficientCreditsModal
+        isOpen={showInsufficientCredits}
+        onClose={() => setShowInsufficientCredits(false)}
+        onBuyCredits={() => setShowBuyCredits(true)}
+      />
+      <BuyCreditsModal
+        isOpen={showBuyCredits}
+        onClose={() => setShowBuyCredits(false)}
       />
       <ServiceLeftPanel
         details={details}
@@ -187,11 +224,11 @@ export default function ServicePlayground() {
         onGenerateConcepts={handleGenerateConcepts}
         generationState={generationState}
         onBack={() => {
-          authClient.signOut().then(() => {
-            router.push("/");
-          });
+          router.push("/");
         }}
         userId={userId}
+        credits={credits}
+        onBuyCredits={() => setShowBuyCredits(true)}
       />
       <RightPanel
         generationState={generationState}

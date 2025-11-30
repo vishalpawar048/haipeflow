@@ -16,6 +16,8 @@ interface ServiceLeftPanelProps {
   generationState: GenerationState;
   onBack?: () => void;
   userId: string | null;
+  credits?: number;
+  onBuyCredits?: () => void;
 }
 
 export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
@@ -24,9 +26,10 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
   onGenerateConcepts,
   generationState,
   onBack,
-  userId
+  userId,
+  credits,
+  onBuyCredits,
 }) => {
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleTextChange = (field: keyof ServiceDetails, value: any) => {
     setDetails((prev) => ({ ...prev, [field]: value }));
@@ -44,7 +47,8 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
     generationState !== GenerationState.IDLE &&
     generationState !== GenerationState.COMPLETE &&
     generationState !== GenerationState.AWAITING_SELECTION;
-  const isReady = details.brandName && details.serviceType && details.sellingPoint;
+  const isReady =
+    details.brandName && details.serviceType && details.sellingPoint;
 
   const toneOptions: DropdownOption[] = TONES.map((t) => ({
     label: t,
@@ -100,6 +104,21 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
               Back to Home
             </button>
           )}
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="px-3 py-1 bg-slate-100 rounded-full text-xs font-medium text-slate-600 border border-slate-200 whitespace-nowrap">
+              {credits !== undefined
+                ? `${Math.round(credits)} Credits`
+                : "Loading..."}
+            </div>
+            {onBuyCredits && (
+              <button
+                onClick={onBuyCredits}
+                className="text-xs text-blue-600 font-bold hover:text-blue-700 transition-colors bg-blue-50 px-3 py-1 rounded-full whitespace-nowrap"
+              >
+                + Buy
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3 mb-2">
@@ -144,7 +163,9 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
               <input
                 type="text"
                 value={details.serviceType}
-                onChange={(e) => handleTextChange("serviceType", e.target.value)}
+                onChange={(e) =>
+                  handleTextChange("serviceType", e.target.value)
+                }
                 placeholder="e.g. Digital Marketing"
                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400"
               />
@@ -305,4 +326,3 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
     </div>
   );
 };
-

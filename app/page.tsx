@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { Icon } from "@/app/playground/components/Icon"; // Assuming Icon is available here
 import { authClient } from "@/lib/auth-client";
 import { SignInModal } from "@/app/components/SignInModal";
+import { BuyCreditsModal } from "@/app/components/BuyCreditsModal";
 
 // --- Icons & Visual Helpers ---
 
@@ -275,84 +276,6 @@ const StatCard = ({
     </div>
   </div>
 );
-
-// --- Helper Component for Video Hover ---
-const VideoHoverCard = ({
-  videoSrc,
-  posterSrc,
-  className,
-}: {
-  videoSrc: string;
-  posterSrc?: string;
-  className?: string;
-}) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  // Autoplay video when component mounts
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current
-        .play()
-        .then(() => {
-          setIsPlaying(true);
-        })
-        .catch((err) => {
-          console.log("Auto-play prevented:", err);
-          // If autoplay fails, try again on user interaction
-          const handleInteraction = () => {
-            if (videoRef.current) {
-              videoRef.current.play().then(() => setIsPlaying(true));
-            }
-          };
-          document.addEventListener("click", handleInteraction, { once: true });
-          document.addEventListener("touchstart", handleInteraction, {
-            once: true,
-          });
-        });
-    }
-  }, []);
-
-  return (
-    <div
-      className={`relative overflow-hidden bg-slate-100 border border-slate-200 shadow-sm ${
-        className || "w-12 h-16 rounded-lg"
-      }`}
-    >
-      {/* Placeholder or Poster */}
-      <div
-        className={`absolute inset-0 flex items-center justify-center bg-slate-100 transition-opacity duration-300 ${
-          isPlaying ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        {posterSrc ? (
-          <Image
-            src={posterSrc}
-            alt="Video Preview"
-            fill
-            className="object-cover"
-          />
-        ) : (
-          <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center shadow-sm">
-            <Icon name="Play" className="w-3 h-3 text-slate-600 ml-0.5" />
-          </div>
-        )}
-      </div>
-
-      <video
-        ref={videoRef}
-        src={videoSrc}
-        muted
-        loop
-        playsInline
-        autoPlay
-        className={`w-full h-full object-cover transition-opacity duration-300 ${
-          isPlaying ? "opacity-100" : "opacity-0"
-        }`}
-      />
-    </div>
-  );
-};
 
 // --- Instagram Style Video Component ---
 const InstagramStyleVideo = ({
@@ -928,7 +851,29 @@ const VideoMarquee = () => {
 export default function Home() {
   const [activeTab, setActiveTab] = useState("analyze");
   const [isSignInOpen, setIsSignInOpen] = useState(false);
-  const { data: session } = authClient.useSession();
+  const [isBuyCreditsOpen, setIsBuyCreditsOpen] = useState(false);
+  const { data: session, isPending } = authClient.useSession();
+  const [credits, setCredits] = useState<number | undefined>(undefined);
+
+  const fetchCredits = async () => {
+    try {
+      const res = await fetch("/api/user/credits");
+      if (res.ok) {
+        const data = await res.json();
+        setCredits(data.credits);
+      }
+    } catch (e) {
+      console.error("Failed to fetch credits", e);
+    }
+  };
+
+  useEffect(() => {
+    if (session) {
+      fetchCredits();
+    }
+  }, [session]);
+
+  console.log("----session", session);
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -939,7 +884,11 @@ export default function Home() {
       <SignInModal
         isOpen={isSignInOpen}
         onClose={() => setIsSignInOpen(false)}
-        redirectUrl="/app-promotion/playground"
+        // redirectUrl="/app-promotion/playground"
+      />
+      <BuyCreditsModal
+        isOpen={isBuyCreditsOpen}
+        onClose={() => setIsBuyCreditsOpen(false)}
       />
       {/* Navbar */}
       <nav className="fixed top-0 z-50 w-full border-b border-black/5 bg-white/80 backdrop-blur-md">
@@ -969,8 +918,21 @@ export default function Home() {
             </a>
           </div>
           <div className="flex items-center gap-4 text-sm font-medium">
-            {session ? (
+            {isPending ? (
+              <div className="h-9 w-24 bg-gray-100 animate-pulse rounded-full"></div>
+            ) : session ? (
               <div className="flex items-center gap-4">
+                <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full text-xs font-medium text-slate-600 border border-slate-200">
+                  {credits !== undefined
+                    ? `${Math.round(credits)} Credits`
+                    : "Loading..."}
+                  <button
+                    onClick={() => setIsBuyCreditsOpen(true)}
+                    className="text-blue-600 font-bold hover:text-blue-700 transition-colors ml-1"
+                  >
+                    + Buy
+                  </button>
+                </div>
                 {session.user.image && (
                   <Image
                     src={session.user.image}
