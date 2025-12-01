@@ -7,6 +7,7 @@ import { Icon } from "@/app/playground/components/Icon"; // Assuming Icon is ava
 import { authClient } from "@/lib/auth-client";
 import { SignInModal } from "@/app/components/SignInModal";
 import { BuyCreditsModal } from "@/app/components/BuyCreditsModal";
+import { CreateVideoModal } from "@/app/components/CreateVideoModal";
 
 // --- Icons & Visual Helpers ---
 
@@ -852,6 +853,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("analyze");
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isBuyCreditsOpen, setIsBuyCreditsOpen] = useState(false);
+  const [isCreateVideoOpen, setIsCreateVideoOpen] = useState(false);
   const { data: session, isPending } = authClient.useSession();
   const [credits, setCredits] = useState<number | undefined>(undefined);
 
@@ -889,6 +891,10 @@ export default function Home() {
       <BuyCreditsModal
         isOpen={isBuyCreditsOpen}
         onClose={() => setIsBuyCreditsOpen(false)}
+      />
+      <CreateVideoModal
+        isOpen={isCreateVideoOpen}
+        onClose={() => setIsCreateVideoOpen(false)}
       />
       {/* Navbar */}
       <nav className="fixed top-0 z-50 w-full border-b border-black/5 bg-white/80 backdrop-blur-md">
@@ -985,6 +991,19 @@ export default function Home() {
                 Services. Haipe Flow&apos;s AI generates high-converting content
                 for Instagram, TikTok, and LinkedIn in seconds.
               </p>
+
+              <div className="pt-4">
+                <button
+                  onClick={() => setIsCreateVideoOpen(true)}
+                  className="group relative inline-flex items-center gap-2 px-8 py-4 bg-black text-white rounded-full font-bold text-lg shadow-xl hover:bg-slate-900 hover:scale-105 transition-all duration-300"
+                >
+                  <span className="relative z-10">Create Video</span>
+                  <div className="relative z-10 p-1 bg-white/20 rounded-full">
+                    <Icon name="Plus" className="w-4 h-4" />
+                  </div>
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-0" />
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 w-full">
               {/* Service Promotion Card */}
