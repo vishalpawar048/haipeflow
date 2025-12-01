@@ -30,6 +30,38 @@ export const ProductLeftPanel: React.FC<ProductLeftPanelProps> = ({
   credits,
   onBuyCredits,
 }) => {
+  const [scrapeUrl, setScrapeUrl] = useState("");
+  const [isScraping, setIsScraping] = useState(false);
+
+  const handleAutoFill = async () => {
+    if (!scrapeUrl) return;
+    setIsScraping(true);
+    try {
+      const response = await fetch("/api/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: scrapeUrl }),
+      });
+
+      if (!response.ok) throw new Error("Failed to scrape");
+
+      const data = await response.json();
+      setDetails((prev) => ({
+        ...prev,
+        productName: data.title || "",
+        sellingPoint: data.description || "",
+        productType: data.type || "",
+        productPhotos: data.images ? data.images.slice(0, 5) : [],
+        logo: data.logo || null,
+      }));
+    } catch (error) {
+      console.error("Scraping error:", error);
+      alert("Failed to auto-fill details. Please try manually.");
+    } finally {
+      setIsScraping(false);
+    }
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleTextChange = (field: keyof ProductDetails, value: any) => {
     setDetails((prev) => ({ ...prev, [field]: value }));
@@ -174,6 +206,34 @@ export const ProductLeftPanel: React.FC<ProductLeftPanelProps> = ({
       </div>
 
       <div className="space-y-8">
+        {/* URL Input Section */}
+        <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+          <label className="block text-xs font-medium text-blue-800 mb-2">
+            Auto-fill from URL (Product Page, Store, etc.)
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={scrapeUrl}
+              onChange={(e) => setScrapeUrl(e.target.value)}
+              placeholder="https://..."
+              className="flex-1 bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+            />
+            <button
+              onClick={handleAutoFill}
+              disabled={isScraping || !scrapeUrl}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isScraping ? (
+                <Icon name="Loader2" className="w-4 h-4 animate-spin" />
+              ) : (
+                <Icon name="Wand2" className="w-4 h-4" />
+              )}
+              Auto-fill
+            </button>
+          </div>
+        </div>
+
         {/* Section 1: Core Identity */}
         <section className="space-y-4">
           <h2 className="text-sm uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-100 pb-2">

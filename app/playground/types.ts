@@ -61,6 +61,7 @@ export interface ServiceDetails {
   sellingPoint: string;
   tone: Tone;
   logo: string | null; // base64
+  servicePhotos: string[]; // array of base64
   aspectRatio: AspectRatio;
   customWidth?: number;
   customHeight?: number;

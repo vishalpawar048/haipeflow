@@ -30,6 +30,38 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
   credits,
   onBuyCredits,
 }) => {
+  const [scrapeUrl, setScrapeUrl] = useState("");
+  const [isScraping, setIsScraping] = useState(false);
+
+  const handleAutoFill = async () => {
+    if (!scrapeUrl) return;
+    setIsScraping(true);
+    try {
+      const response = await fetch("/api/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: scrapeUrl }),
+      });
+
+      if (!response.ok) throw new Error("Failed to scrape");
+
+      const data = await response.json();
+      setDetails((prev) => ({
+        ...prev,
+        brandName: data.title || "",
+        sellingPoint: data.description || "",
+        serviceType: data.type || "",
+        servicePhotos: data.images ? data.images.slice(0, 5) : [],
+        logo: data.logo || null,
+      }));
+    } catch (error) {
+      console.error("Scraping error:", error);
+      alert("Failed to auto-fill details. Please try manually.");
+    } finally {
+      setIsScraping(false);
+    }
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleTextChange = (field: keyof ServiceDetails, value: any) => {
     setDetails((prev) => ({ ...prev, [field]: value }));
@@ -41,6 +73,40 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
       setDetails((prev) => ({ ...prev, logo: reader.result as string }));
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleServicePhotosUpload = async (files: File[]) => {
+    const readers = files.map(
+      (file) =>
+        new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        })
+    );
+
+    try {
+      const results = await Promise.all(readers);
+      setDetails((prev) => {
+        const currentCount = prev.servicePhotos.length;
+        const availableSlots = 5 - currentCount;
+        if (availableSlots <= 0) return prev;
+        const newPhotos = results.slice(0, availableSlots);
+        return {
+          ...prev,
+          servicePhotos: [...prev.servicePhotos, ...newPhotos],
+        };
+      });
+    } catch (error) {
+      console.error("Error reading files", error);
+    }
+  };
+
+  const removeServicePhoto = (index: number) => {
+    setDetails((prev) => ({
+      ...prev,
+      servicePhotos: prev.servicePhotos.filter((_, i) => i !== index),
+    }));
   };
 
   const isGenerating =
@@ -137,6 +203,34 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
       </div>
 
       <div className="space-y-8">
+        {/* URL Input Section */}
+        <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+          <label className="block text-xs font-medium text-blue-800 mb-2">
+            Auto-fill from URL (Website, Landing Page, etc.)
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={scrapeUrl}
+              onChange={(e) => setScrapeUrl(e.target.value)}
+              placeholder="https://..."
+              className="flex-1 bg-white border border-blue-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-blue-500"
+            />
+            <button
+              onClick={handleAutoFill}
+              disabled={isScraping || !scrapeUrl}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isScraping ? (
+                <Icon name="Loader2" className="w-4 h-4 animate-spin" />
+              ) : (
+                <Icon name="Wand2" className="w-4 h-4" />
+              )}
+              Auto-fill
+            </button>
+          </div>
+        </div>
+
         {/* Section 1: Core Identity */}
         <section className="space-y-4">
           <h2 className="text-sm uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-100 pb-2">
@@ -203,13 +297,45 @@ export const ServiceLeftPanel: React.FC<ServiceLeftPanelProps> = ({
           <h2 className="text-sm uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-100 pb-2">
             2. Visual Assets
           </h2>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Dropzone
               label="Upload Brand Logo"
               subLabel="PNG or JPG"
               preview={details.logo || undefined}
               onFileSelect={handleLogoUpload}
             />
+            <div className="space-y-2">
+              <Dropzone
+                label="Upload Service Photos"
+                subLabel="Max 5 photos (Select multiple)"
+                multiple={true}
+                onFilesSelect={handleServicePhotosUpload}
+              />
+
+              {/* Photo thumbnails */}
+              {details.servicePhotos && details.servicePhotos.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {details.servicePhotos.map((s, i) => (
+                    <div
+                      key={i}
+                      className="relative w-16 h-24 flex-shrink-0 rounded overflow-hidden group border border-slate-200 shadow-sm"
+                    >
+                      <img
+                        src={s}
+                        alt={`Service ${i}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => removeServicePhoto(i)}
+                        className="absolute top-0 right-0 bg-red-500 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Icon name="X" className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </section>
 

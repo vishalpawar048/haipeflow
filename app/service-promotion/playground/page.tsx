@@ -63,6 +63,7 @@ export default function ServicePlayground() {
     sellingPoint: "",
     tone: Tone.PROFESSIONAL,
     logo: null,
+    servicePhotos: [],
     aspectRatio: AspectRatio.PORTRAIT,
     customWidth: 1080,
     customHeight: 1920,
