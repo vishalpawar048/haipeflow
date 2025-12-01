@@ -1,5 +1,6 @@
 import React from "react";
 import { X, Zap, Check } from "lucide-react";
+import { load } from "@cashfreepayments/cashfree-js";
 
 interface BuyCreditsModalProps {
   isOpen: boolean;
@@ -27,9 +28,41 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const handleBuy = (tier: PricingTier) => {
-    alert(`Buying ${tier.credits} credits for $${tier.price} (Integration coming soon)`);
-    onClose();
+  const handleBuy = async (tier: PricingTier) => {
+    try {
+      // 1. Create Order
+      const response = await fetch("/api/payment/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: tier.price,
+          credits: tier.credits,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create order");
+      }
+
+      const { payment_session_id } = await response.json();
+
+      // 2. Initialize Cashfree
+      const cashfree = await load({
+        mode: "sandbox", // Switch to "production" in prod
+      });
+
+      // 3. Redirect to Checkout
+      await cashfree.checkout({
+        paymentSessionId: payment_session_id,
+        redirectTarget: "_self",
+      });
+      
+      onClose();
+    } catch (error) {
+      console.error("Payment Error:", error);
+      alert("Failed to initiate payment. Please try again.");
+    }
   };
 
   return (
@@ -142,7 +175,7 @@ export const BuyCreditsModal: React.FC<BuyCreditsModalProps> = ({
           </div>
 
           <p className="text-center text-xs text-slate-400 mt-6">
-            Secure payment processing powered by Stripe.
+            Secure payment processing powered by Cashfree.
           </p>
         </div>
 
