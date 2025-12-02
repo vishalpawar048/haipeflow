@@ -993,8 +993,8 @@ export default function Home() {
               </p>
 
               <div className="pt-4">
-                <button
-                  onClick={() => setIsCreateVideoOpen(true)}
+                <Link
+                  href="/service-promotion/playground"
                   className="group relative inline-flex items-center gap-2 px-8 py-4 bg-black text-white rounded-full font-bold text-lg shadow-xl hover:bg-slate-900 hover:scale-105 transition-all duration-300"
                 >
                   <span className="relative z-10">Create Video</span>
@@ -1002,7 +1002,7 @@ export default function Home() {
                     <Icon name="Plus" className="w-4 h-4" />
                   </div>
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-0" />
-                </button>
+                </Link>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 w-full">
@@ -1044,13 +1044,12 @@ export default function Home() {
               </Link>
 
               {/* Product Promotion Card */}
-              <Link
+              {/* <Link
                 href="/product-promotion/playground"
                 className="group relative overflow-hidden rounded-2xl border border-black/10 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-purple-500/50"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="relative z-10 flex flex-col h-full">
-                  {/* Video Preview */}
                   <div className="mb-6 w-full relative rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all">
                     <InstagramStyleVideo
                       videoSrc="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
@@ -1078,16 +1077,15 @@ export default function Home() {
                     <Icon name="ArrowRight" className="w-4 h-4 ml-1" />
                   </div>
                 </div>
-              </Link>
+              </Link> */}
 
               {/* Mobile App Promotion Card */}
-              <Link
+              {/* <Link
                 href="/app-promotion/playground"
                 className="group relative overflow-hidden rounded-2xl border border-black/10 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-blue-500/50"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="relative z-10 flex flex-col h-full">
-                  {/* Video Preview */}
                   <div className="mb-6 w-full relative rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all">
                     <InstagramStyleVideo
                       videoSrc="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
@@ -1115,7 +1113,7 @@ export default function Home() {
                     <Icon name="ArrowRight" className="w-4 h-4 ml-1" />
                   </div>
                 </div>
-              </Link>
+              </Link> */}
             </div>
             <p className="text-xs text-gray-400 flex items-center gap-2 pt-4">
               <span className="flex items-center gap-1">
